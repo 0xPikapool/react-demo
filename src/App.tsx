@@ -1,16 +1,17 @@
-import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { useAccount } from 'wagmi'
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useAccount } from "wagmi";
 
-import { Account } from './components'
+import { Account } from "./components";
+import { BidForm } from "./components/BidForm";
 
 export function App() {
-  const { isConnected } = useAccount()
+  const { isConnected } = useAccount();
   return (
     <>
-      <h1>wagmi + RainbowKit + Vite</h1>
+      <h1>Pikapool React Demo</h1>
 
       <ConnectButton />
-      {isConnected && <Account />}
+      {isConnected && <BidForm />}
     </>
-  )
+  );
 }

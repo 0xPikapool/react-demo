@@ -94,17 +94,23 @@ export default function useBid(
       const typed_data = { ...typedData, message: typedData.value };
       // @ts-expect-error
       delete typed_data["value"];
-      const response = await fetch(pikapoolOptions?.rpcUrl, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          typed_data,
-          signature: sig,
-          sender: await signer.getAddress(),
-        }),
-      });
+      const receipt = JSON.stringify(
+        await (
+          await fetch(pikapoolOptions.rpcUrl, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              typed_data,
+              signature: sig,
+              sender: await signer.getAddress(),
+            }),
+          })
+        ).json(),
+        null,
+        2
+      ) as Receipt;
       setReceipt(receipt);
     } catch (error) {
       if (error instanceof Error) setError(error);

@@ -1,28 +1,14 @@
 import { useEffect, useState } from "react";
-import { useSignTypedData } from "wagmi";
-
-// interface Receipt {
-//   timestamp_iso: string;
-//   signer: `0x${string}`;
-//   domain: {
-//     name: `${string} - Bid Confirmation`;
-//     version: "1";
-//     chainId: 1;
-//     verifyingContract: `0x${string}`;
-//   };
-//   bid: {
-//     "auction contract": string;
-//     "total nfts": number;
-//     "base price (per nft)": number;
-//     "tip (per nft)": number;
-//   };
-//   signer_signature: string;
-//   pikapool_signature: string;
-// }
+import { useSignTypedData, useSigner } from "wagmi";
 
 type Receipt = string;
 
 interface PikapoolOptions {
+  settlementContract: `0x${string}`;
+  rpcUrl: string;
+}
+
+interface PikapoolOptionOverrides {
   settlementContract?: `0x${string}`;
   rpcUrl?: string;
 }
@@ -30,7 +16,9 @@ interface PikapoolOptions {
 const DEFAULT_PIKAPOOL_OPTIONS: PikapoolOptions = {
   settlementContract: "0x690B9A9E9aa1C9dB991C7721a92d351Db4FaC990",
   rpcUrl:
-    "https://akvasptk7wykstswut5q3r2rii0rnohr.lambda-url.us-east-1.on.aws/",
+    // "https://akvasptk7wykstswut5q3r2rii0rnohr.lambda-url.us-east-1.on.aws/",
+    "http://localhost:9000/lambda-url/pikapool-api/",
+  // "https://cb35-2001-8f8-1db1-aae1-e9de-38a3-c9ab-213.ngrok.io/lambda-url/pikapool-api",
 };
 
 export default function useBid(
@@ -39,51 +27,84 @@ export default function useBid(
   amount: number,
   tip: number,
   basePrice: number = 23,
-  pikapoolOptionOverrides: PikapoolOptions = DEFAULT_PIKAPOOL_OPTIONS
+  pikapoolOptionOverrides: PikapoolOptionOverrides = DEFAULT_PIKAPOOL_OPTIONS
 ) {
-  const pikapoolOptions = {
-    pikapoolOptionOverrides,
+  const pikapoolOptions: PikapoolOptions = {
     ...DEFAULT_PIKAPOOL_OPTIONS,
+    ...pikapoolOptionOverrides,
   };
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [receipt, setReceipt] = useState<Receipt | null>(null);
+  const { data: signer } = useSigner();
+
   const typedData = {
+    primaryType: "Bid",
     domain: {
       name: `${auctionName} - Bid Confirmation`,
       version: "1",
-      chainId: 1,
+      chainId: "0x1",
       verifyingContract: pikapoolOptions.settlementContract,
     },
 
     types: {
+      EIP712Domain: [
+        {
+          name: "name",
+          type: "string",
+        },
+        {
+          name: "version",
+          type: "string",
+        },
+        {
+          name: "chainId",
+          type: "uint256",
+        },
+        {
+          name: "verifyingContract",
+          type: "address",
+        },
+      ],
       Bid: [
-        { name: "auction contract", type: "string" },
-        { name: "nfts to bid for", type: "string" },
-        { name: "base price (per nft)", type: "string" },
-        { name: "tip (per nft)", type: "string" },
+        { name: "auction_contract", type: "string" },
+        { name: "nfts_to_bid_for", type: "string" },
+        { name: "base_price_per_nft", type: "string" },
+        { name: "tip_per_nft", type: "string" },
       ],
     },
 
     value: {
-      "auction contract": auctionContract,
-      "nfts to bid for": amount.toString(),
-      "base price (per nft)": basePrice.toString(),
-      "tip (per nft)": tip.toString(),
+      auction_contract: auctionContract,
+      nfts_to_bid_for: amount.toString(),
+      base_price_per_nft: basePrice.toString(),
+      tip_per_nft: tip.toString(),
     },
   };
   const res = useSignTypedData(typedData);
 
   async function signAndSubmit() {
+    if (!signer) return setError(new Error("No signer detected"));
     try {
       setIsLoading(true);
       setError(null);
       const sig = await res.signTypedDataAsync();
-      console.log(sig);
-      // Mock RPC request
-      const receipt = (await new Promise((resolve) =>
-        setTimeout(() => resolve("receipt"), 1000)
-      )) as Receipt;
+      // wagmi uses 'value' instead of 'message' for some reason.
+      // dirty switch for now.
+      const typed_data = { ...typedData, message: typedData.value };
+      // @ts-expect-error
+      delete typed_data["value"];
+      const response = await fetch(pikapoolOptions?.rpcUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          typed_data,
+          signature: sig,
+          sender: await signer.getAddress(),
+        }),
+      });
       setReceipt(receipt);
     } catch (error) {
       if (error instanceof Error) setError(error);

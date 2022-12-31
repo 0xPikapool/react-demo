@@ -14,15 +14,13 @@ interface PikapoolOptionOverrides {
 }
 
 const DEFAULT_PIKAPOOL_OPTIONS: PikapoolOptions = {
-  settlementContract: "0x690B9A9E9aa1C9dB991C7721a92d351Db4FaC990",
+  settlementContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
   rpcUrl:
     // "https://akvasptk7wykstswut5q3r2rii0rnohr.lambda-url.us-east-1.on.aws/",
     "http://localhost:9000/lambda-url/pikapool-api/",
-  // "https://cb35-2001-8f8-1db1-aae1-e9de-38a3-c9ab-213.ngrok.io/lambda-url/pikapool-api",
 };
 
 export default function useBid(
-  auctionName: string,
   auctionContract: `0x${string}`,
   amount: number,
   tip: number,
@@ -41,7 +39,7 @@ export default function useBid(
   const typedData = {
     primaryType: "Bid",
     domain: {
-      name: `${auctionName} - Bid Confirmation`,
+      name: `Pikapool Auction`,
       version: "1",
       chainId: "0x1",
       verifyingContract: pikapoolOptions.settlementContract,
@@ -67,18 +65,18 @@ export default function useBid(
         },
       ],
       Bid: [
-        { name: "auction_contract", type: "string" },
-        { name: "nfts_to_bid_for", type: "string" },
-        { name: "base_price_per_nft", type: "string" },
-        { name: "tip_per_nft", type: "string" },
+        { name: "auctionContract", type: "address" },
+        { name: "nftCount", type: "string" },
+        { name: "basePricePerNft", type: "string" },
+        { name: "tipPerNft", type: "string" },
       ],
     },
 
     value: {
-      auction_contract: auctionContract,
-      nfts_to_bid_for: amount.toString(),
-      base_price_per_nft: basePrice.toString(),
-      tip_per_nft: tip.toString(),
+      auctionContract: auctionContract,
+      nftCount: amount.toString(),
+      basePricePerNft: basePrice.toString(),
+      tipPerNft: tip.toString(),
     },
   };
   const res = useSignTypedData(typedData);
@@ -94,6 +92,7 @@ export default function useBid(
       const typed_data = { ...typedData, message: typedData.value };
       // @ts-expect-error
       delete typed_data["value"];
+      console.log(sig);
       const receipt = JSON.stringify(
         await (
           await fetch(pikapoolOptions.rpcUrl, {

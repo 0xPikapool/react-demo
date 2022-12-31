@@ -9,7 +9,6 @@ export function BidForm() {
   const [tip, setTip] = useState(0.1);
   const [basePrice, setBasePrice] = useState(0.25);
   const { signAndSubmit, isLoading, error, receipt } = useBid(
-    auctionName,
     auctionContract,
     amount,
     tip,
@@ -20,14 +19,6 @@ export function BidForm() {
     <>
       <div>
         <h3>Auction Configuration</h3>
-        <label htmlFor="auctionId">Auction ID</label>
-        <input
-          id="auctionId"
-          type="text"
-          value={auctionName}
-          onChange={(e) => setAuctionName(e.target.value)}
-        />
-        <br />
         <label htmlFor="auctionContract">Auction Contract</label>
         <input
           id="auctionContract"

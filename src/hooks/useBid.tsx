@@ -14,7 +14,7 @@ interface PikapoolOptionOverrides {
 }
 
 const DEFAULT_PIKAPOOL_OPTIONS: PikapoolOptions = {
-  settlementContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
+  settlementContract: "0xd2090025857B9C7B24387741f120538E928A3a59",
   rpcUrl:
     // "https://akvasptk7wykstswut5q3r2rii0rnohr.lambda-url.us-east-1.on.aws/",
     "http://localhost:9000/lambda-url/pikapool-api/",
@@ -24,7 +24,8 @@ export default function useBid(
   auctionContract: `0x${string}`,
   amount: number,
   tip: number,
-  basePrice: number = 23,
+  basePrice: number,
+  chainId: number = 1,
   pikapoolOptionOverrides: PikapoolOptionOverrides = DEFAULT_PIKAPOOL_OPTIONS
 ) {
   const pikapoolOptions: PikapoolOptions = {
@@ -39,9 +40,9 @@ export default function useBid(
   const typedData = {
     primaryType: "Bid",
     domain: {
-      name: `Pikapool Auction`,
+      name: "Pikapool Auction",
       version: "1",
-      chainId: "0x1",
+      chainId: "0x" + chainId.toString(16),
       verifyingContract: pikapoolOptions.settlementContract,
     },
 
@@ -86,31 +87,27 @@ export default function useBid(
     try {
       setIsLoading(true);
       setError(null);
+      setReceipt(null);
       const sig = await res.signTypedDataAsync();
       // wagmi uses 'value' instead of 'message' for some reason.
       // dirty switch for now.
-      const typed_data = { ...typedData, message: typedData.value };
+      const typedDataToSend = { ...typedData, message: typedData.value };
       // @ts-expect-error
-      delete typed_data["value"];
-      console.log(sig);
-      const receipt = JSON.stringify(
-        await (
-          await fetch(pikapoolOptions.rpcUrl, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              typed_data,
-              signature: sig,
-              sender: await signer.getAddress(),
-            }),
-          })
-        ).json(),
-        null,
-        2
-      ) as Receipt;
+      delete typedDataToSend["value"];
+      const receipt = await fetch(pikapoolOptions.rpcUrl, {
+        method: "PUT",
+        body: JSON.stringify(
+          {
+            typedData: typedDataToSend,
+            signature: sig,
+            sender: await signer.getAddress(),
+          },
+          null,
+          2
+        ),
+      }).then((res) => res.text());
       setReceipt(receipt);
+      setError(null);
     } catch (error) {
       if (error instanceof Error) setError(error);
     } finally {

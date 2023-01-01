@@ -2,10 +2,10 @@ import { useState } from "react";
 import useBid from "../hooks/useBid";
 
 export function BidForm() {
-  const [auctionName, setAuctionName] = useState("PokeNFT");
-  const [auctionContract, setAuctionContract] =
-    useState<`0x${string}`>("0x000");
-  const [amount, setAmount] = useState(1);
+  const [auctionContract, setAuctionContract] = useState<`0x${string}`>(
+    "0xFeebabE6b0418eC13b30aAdF129F5DcDd4f70CeA"
+  );
+  const [amount, setAmount] = useState(5);
   const [tip, setTip] = useState(0.1);
   const [basePrice, setBasePrice] = useState(0.25);
   const { signAndSubmit, isLoading, error, receipt } = useBid(

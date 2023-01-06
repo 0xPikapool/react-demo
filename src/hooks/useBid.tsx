@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSignTypedData, useSigner } from "wagmi";
+import { utils } from "ethers";
 
 type Receipt = string;
 
@@ -16,12 +17,13 @@ interface PikapoolOptionOverrides {
 const DEFAULT_PIKAPOOL_OPTIONS: PikapoolOptions = {
   settlementContract: "0xd2090025857B9C7B24387741f120538E928A3a59",
   rpcUrl:
-    // "https://akvasptk7wykstswut5q3r2rii0rnohr.lambda-url.us-east-1.on.aws/",
-    "http://localhost:9000/lambda-url/pikapool-api/",
+    "https://zxdu2gzczdmgae7l42v2nn3dve0hghjd.lambda-url.us-east-1.on.aws/",
+  // "http://localhost:9000/lambda-url/pikapool-api/",
 };
 
 export default function useBid(
-  auctionContract: `0x${string}`,
+  auctionName: string,
+  auctionAddress: `0x${string}`,
   amount: number,
   tip: number,
   basePrice: number,
@@ -36,6 +38,9 @@ export default function useBid(
   const [error, setError] = useState<Error | null>(null);
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const { data: signer } = useSigner();
+
+  const basePriceBn = utils.parseEther(basePrice.toString());
+  const tipBn = utils.parseEther(tip.toString());
 
   const typedData = {
     primaryType: "Bid",
@@ -66,18 +71,20 @@ export default function useBid(
         },
       ],
       Bid: [
-        { name: "auctionContract", type: "address" },
-        { name: "nftCount", type: "string" },
-        { name: "basePricePerNft", type: "string" },
-        { name: "tipPerNft", type: "string" },
+        { name: "auctionName", type: "string" },
+        { name: "auctionAddress", type: "address" },
+        { name: "amount", type: "uint256" },
+        { name: "basePrice", type: "uint256" },
+        { name: "tip", type: "uint256" },
       ],
     },
 
     value: {
-      auctionContract: auctionContract,
-      nftCount: amount.toString(),
-      basePricePerNft: basePrice.toString(),
-      tipPerNft: tip.toString(),
+      auctionName,
+      auctionAddress,
+      amount: amount.toString(),
+      basePrice: basePriceBn.toString(),
+      tip: tipBn.toString(),
     },
   };
   const res = useSignTypedData(typedData);
@@ -91,14 +98,22 @@ export default function useBid(
       const sig = await res.signTypedDataAsync();
       // wagmi uses 'value' instead of 'message' for some reason.
       // dirty switch for now.
-      const typedDataToSend = { ...typedData, message: typedData.value };
+      const typedDataToSend = {
+        ...typedData,
+        message: {
+          ...typedData.value,
+          amount: "0x" + amount.toString(16),
+          basePrice: basePriceBn.toHexString(),
+          tip: tipBn.toHexString(),
+        },
+      };
       // @ts-expect-error
       delete typedDataToSend["value"];
       const receipt = await fetch(pikapoolOptions.rpcUrl, {
         method: "PUT",
         body: JSON.stringify(
           {
-            typedData: typedDataToSend,
+            typed_data: typedDataToSend,
             signature: sig,
             sender: await signer.getAddress(),
           },

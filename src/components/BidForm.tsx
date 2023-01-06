@@ -2,14 +2,18 @@ import { useState } from "react";
 import useBid from "../hooks/useBid";
 
 export function BidForm() {
-  const [auctionContract, setAuctionContract] = useState<`0x${string}`>(
+  const [auctionAddress, setAuctionAddress] = useState<`0x${string}`>(
     "0xFeebabE6b0418eC13b30aAdF129F5DcDd4f70CeA"
+  );
+  const [auctionName, setAuctionName] = useState<string>(
+    "LeafyGreens_Public_Sale"
   );
   const [amount, setAmount] = useState(5);
   const [tip, setTip] = useState(0.1);
   const [basePrice, setBasePrice] = useState(0.25);
   const { signAndSubmit, isLoading, error, receipt } = useBid(
-    auctionContract,
+    auctionName,
+    auctionAddress,
     amount,
     tip,
     basePrice
@@ -19,14 +23,24 @@ export function BidForm() {
     <>
       <div>
         <h3>Auction Configuration</h3>
-        <label htmlFor="auctionContract">Auction Contract</label>
+        <label htmlFor="auctionName">Auction Name</label>
         <input
-          id="auctionContract"
+          id="auctionName"
           type="text"
-          value={auctionContract}
+          value={auctionName}
+          onChange={(e) => {
+            setAuctionName(e.target.value);
+          }}
+        />
+        <br />
+        <label htmlFor="auctionAddress">Auction Address</label>
+        <input
+          id="auctionAddress"
+          type="text"
+          value={auctionAddress}
           onChange={(e) => {
             e.target.value.startsWith("0x") &&
-              setAuctionContract(e.target.value as `0x${string}`);
+              setAuctionAddress(e.target.value as `0x${string}`);
           }}
         />
         <br />
@@ -38,7 +52,7 @@ export function BidForm() {
           onChange={(e) => setBasePrice(Number(e.target.value))}
         />
         <h3>Bid Configuration</h3>
-        <label htmlFor="amount">NFTs to bid for</label>
+        <label htmlFor="amount">Amount</label>
         <input
           id="amount"
           type="number"
@@ -46,7 +60,7 @@ export function BidForm() {
           onChange={(e) => setAmount(Number(e.target.value))}
         />
         <br />
-        <label htmlFor="tip">Tip (per nft)</label>
+        <label htmlFor="tip">Tip</label>
         <input
           id="tip"
           type="number"

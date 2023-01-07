@@ -11,6 +11,9 @@ export function BidForm() {
   const [auctionAddress, setAuctionAddress] = useState<`0x${string}`>(
     "0xFeebabE6b0418eC13b30aAdF129F5DcDd4f70CeA"
   );
+  const [settlementContract, setSettlementContract] = useState<`0x${string}`>(
+    "0xeb29126051fd8507f911b0506917e293bab82f8b"
+  );
   const [auctionName, setAuctionName] = useState<string>(
     "LeafyGreens_Public_Sale"
   );
@@ -23,7 +26,10 @@ export function BidForm() {
     amount,
     tip,
     basePrice,
-    chain?.id
+    chain?.id,
+    {
+      settlementContract,
+    }
   );
 
   if (receipt) return <Success receipt={receipt} reset={reset} />;
@@ -64,6 +70,17 @@ export function BidForm() {
               onChange={(e) => {
                 e.target.value.startsWith("0x") &&
                   setAuctionAddress(e.target.value as `0x${string}`);
+              }}
+            />
+            <br />
+            <label htmlFor="settlementContract">Address</label>
+            <input
+              id="settlementContract"
+              type="text"
+              value={settlementContract}
+              onChange={(e) => {
+                e.target.value.startsWith("0x") &&
+                  setSettlementContract(e.target.value as `0x${string}`);
               }}
             />
             <br />

@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
-import { useSignTypedData, useSigner } from "wagmi";
+import { useSignTypedData, useAccount } from "wagmi";
 import { utils } from "ethers";
 
-type Receipt = string;
+export interface Receipt {
+  id: string;
+  cid: string;
+}
 
 interface PikapoolOptions {
   settlementContract: `0x${string}`;
@@ -16,7 +19,7 @@ interface PikapoolOptionOverrides {
 
 const DEFAULT_PIKAPOOL_OPTIONS: PikapoolOptions = {
   settlementContract: "0xd2090025857B9C7B24387741f120538E928A3a59",
-  rpcUrl: "https://3e4nlkrx8k.execute-api.us-east-1.amazonaws.com/bids",
+  rpcUrl: "https://api.pikapool.cool/v0/bids",
 };
 
 export default function useBid(
@@ -35,7 +38,7 @@ export default function useBid(
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [receipt, setReceipt] = useState<Receipt | null>(null);
-  const { data: signer } = useSigner();
+  const { address } = useAccount();
 
   const basePriceBn = utils.parseEther(basePrice.toString());
   const tipBn = utils.parseEther(tip.toString());
@@ -85,15 +88,21 @@ export default function useBid(
       tip: tipBn.toString(),
     },
   };
-  const res = useSignTypedData(typedData);
+  const wagmi = useSignTypedData(typedData);
+
+  function reset() {
+    setIsLoading(false);
+    setError(null);
+    setReceipt(null);
+  }
 
   async function signAndSubmit() {
-    if (!signer) return setError(new Error("No signer detected"));
+    if (!address) return setError(new Error("No address"));
     try {
       setIsLoading(true);
       setError(null);
       setReceipt(null);
-      const sig = await res.signTypedDataAsync();
+      const sig = await wagmi.signTypedDataAsync();
       // wagmi uses 'value' instead of 'message' for some reason.
       // dirty switch for now.
       const typedDataToSend = {
@@ -107,22 +116,29 @@ export default function useBid(
       };
       // @ts-expect-error
       delete typedDataToSend["value"];
-      const receipt = await fetch(pikapoolOptions.rpcUrl, {
+      const res = await fetch(pikapoolOptions.rpcUrl, {
         method: "PUT",
         body: JSON.stringify(
           {
             typed_data: typedDataToSend,
             signature: sig,
-            sender: await signer.getAddress(),
+            sender: address,
           },
           null,
           2
         ),
-      }).then((res) => res.text());
+      });
+      const receipt = await res.json();
+      if (res.status !== 200)
+        throw new Error(`[${res.status}] ${receipt.error}`);
+
       setReceipt(receipt);
       setError(null);
     } catch (error) {
-      if (error instanceof Error) setError(error);
+      if (error instanceof Error) {
+        setError(error);
+        setReceipt(null);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -133,5 +149,6 @@ export default function useBid(
     isLoading,
     error,
     receipt,
+    reset,
   };
 }

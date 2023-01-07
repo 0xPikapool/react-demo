@@ -19,7 +19,7 @@ export function App() {
         target="_blank"
         style={{ marginTop: "-15px", marginBottom: "2rem" }}
       >
-        whats this?
+        OwO whats this?
       </a>
 
       <BidForm />

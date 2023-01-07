@@ -16,9 +16,7 @@ interface PikapoolOptionOverrides {
 
 const DEFAULT_PIKAPOOL_OPTIONS: PikapoolOptions = {
   settlementContract: "0xd2090025857B9C7B24387741f120538E928A3a59",
-  rpcUrl:
-    "https://zxdu2gzczdmgae7l42v2nn3dve0hghjd.lambda-url.us-east-1.on.aws/",
-  // "http://localhost:9000/lambda-url/pikapool-api/",
+  rpcUrl: "https://3e4nlkrx8k.execute-api.us-east-1.amazonaws.com/bids",
 };
 
 export default function useBid(

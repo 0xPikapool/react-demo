@@ -1,12 +1,13 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useState } from "react";
-import { useAccount } from "wagmi";
+import { useAccount, useNetwork } from "wagmi";
 import useBid, { Receipt } from "../hooks/useBid";
 import happyPika from "../public/happy-pika.webp";
 import sadPika from "../public/sad-pika.webp";
 
 export function BidForm() {
   const { isConnected } = useAccount();
+  const { chain } = useNetwork();
   const [auctionAddress, setAuctionAddress] = useState<`0x${string}`>(
     "0xFeebabE6b0418eC13b30aAdF129F5DcDd4f70CeA"
   );
@@ -21,7 +22,8 @@ export function BidForm() {
     auctionAddress,
     amount,
     tip,
-    basePrice
+    basePrice,
+    chain?.id
   );
 
   if (receipt) return <Success receipt={receipt} reset={reset} />;

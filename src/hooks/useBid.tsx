@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSignTypedData, useAccount } from "wagmi";
-import { utils } from "ethers";
+import { BigNumber, utils } from "ethers";
 
 export interface Receipt {
   id: string;
@@ -40,8 +40,8 @@ export default function useBid(
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const { address } = useAccount();
 
-  const basePriceBn = utils.parseEther(basePrice.toString());
-  const tipBn = utils.parseEther(tip.toString());
+  const basePriceBn = BigNumber.from("69");
+  const tipBn = BigNumber.from("420");
 
   const typedData = {
     primaryType: "Bid",

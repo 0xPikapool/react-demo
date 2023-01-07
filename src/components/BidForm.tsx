@@ -62,7 +62,7 @@ export function BidForm() {
               }}
             />
             <br />
-            <label htmlFor="auctionAddress">Address</label>
+            <label htmlFor="auctionAddress">NFT Address</label>
             <input
               id="auctionAddress"
               type="text"
@@ -73,7 +73,7 @@ export function BidForm() {
               }}
             />
             <br />
-            <label htmlFor="settlementContract">Address</label>
+            <label htmlFor="settlementContract">Settlement Address</label>
             <input
               id="settlementContract"
               type="text"

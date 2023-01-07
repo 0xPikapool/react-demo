@@ -4,7 +4,6 @@ import { Account } from "./components";
 import { BidForm } from "./components/BidForm";
 
 export function App() {
-  const { isConnected } = useAccount();
   return (
     <div
       style={{
@@ -15,9 +14,15 @@ export function App() {
       }}
     >
       <h1>Pikapool React Demo</h1>
+      <a
+        href="https://pikapool.cool/docs"
+        target="_blank"
+        style={{ marginTop: "-15px", marginBottom: "2rem" }}
+      >
+        whats this?
+      </a>
 
-      <ConnectButton />
-      {isConnected && <BidForm />}
+      <BidForm />
     </div>
   );
 }

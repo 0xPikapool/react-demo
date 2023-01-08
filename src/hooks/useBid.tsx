@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useSignTypedData, useAccount } from "wagmi";
-import { BigNumber, utils } from "ethers";
+import { BigNumber, utils, Contract, providers } from "ethers";
+
+import SettlementAbi from "../abi/Settlement.json";
 
 export interface Receipt {
   id: string;
@@ -74,6 +76,7 @@ export default function useBid(
       Bid: [
         { name: "auctionName", type: "string" },
         { name: "auctionAddress", type: "address" },
+        { name: "bidder", type: "address" },
         { name: "amount", type: "uint256" },
         { name: "basePrice", type: "uint256" },
         { name: "tip", type: "uint256" },
@@ -83,12 +86,29 @@ export default function useBid(
     value: {
       auctionName,
       auctionAddress,
+      bidder: address,
       amount: amount.toString(),
       basePrice: basePriceBn.toString(),
       tip: tipBn.toString(),
     },
   };
   const wagmi = useSignTypedData(typedData);
+
+  // const provider = providers.getDefaultProvider(5);
+  // const bid = {
+  //   auctionName,
+  //   auctionAddress,
+  //   bidder: address,
+  //   amount: amount.toString(),
+  //   basePrice: basePriceBn.toString(),
+  //   tip: tipBn.toString(),
+  // };
+  // console.log(bid);
+  // const contract = new Contract(
+  //   "0x6f6f38bfc46d3fe0e3a34c01d9550401c7764621",
+  //   SettlementAbi,
+  //   provider
+  // );
 
   function reset() {
     setIsLoading(false);
@@ -116,6 +136,17 @@ export default function useBid(
       };
       // @ts-expect-error
       delete typedDataToSend["value"];
+      console.log(
+        JSON.stringify(
+          {
+            typed_data: typedDataToSend,
+            signature: sig,
+            sender: address,
+          },
+          null,
+          2
+        )
+      );
       const res = await fetch(pikapoolOptions.rpcUrl, {
         method: "PUT",
         body: JSON.stringify(

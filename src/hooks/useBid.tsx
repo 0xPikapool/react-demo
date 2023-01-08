@@ -46,8 +46,8 @@ export default function useBid(
   const typedData = {
     primaryType: "Bid",
     domain: {
-      name: "Pikapool Auction",
-      version: "1",
+      name: "Pikapool",
+      version: "v0",
       chainId: "0x" + chainId.toString(5),
       verifyingContract: pikapoolOptions.settlementContract,
     },

@@ -48,7 +48,7 @@ export default function useBid(
     domain: {
       name: "Pikapool",
       version: "v0",
-      chainId: "0x" + chainId.toString(5),
+      chainId: "0x" + chainId.toString(16),
       verifyingContract: pikapoolOptions.settlementContract,
     },
 

@@ -9,16 +9,13 @@ export function BidForm() {
   const { isConnected } = useAccount();
   const { chain } = useNetwork();
   const [auctionAddress, setAuctionAddress] = useState<`0x${string}`>(
-    // "0xFeebabE6b0418eC13b30aAdF129F5DcDd4f70CeA"
-    "0x185a4dc360CE69bDCceE33b3784B0282f7961aea"
+    "0x9bB4E845340a98cd132ce8e5B4C9fC0CedbB3C5b"
   );
   const [settlementContract, setSettlementContract] = useState<`0x${string}`>(
-    // "0xeb29126051fd8507f911b0506917e293bab82f8b"
-    "0xCe71065D4017F316EC606Fe4422e11eB2c47c246"
+    "0xf2F1cb33141c931D2e81cD0572c97e5b2c63fD9c"
   );
   const [auctionName, setAuctionName] = useState<string>(
-    // "LeafyGreens_Public_Sale"
-    "TestNFT"
+    "Mistys_Modafinil_Maze"
   );
   const [amount, setAmount] = useState(5);
   const [tip, setTip] = useState(0.1);

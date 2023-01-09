@@ -20,7 +20,7 @@ interface PikapoolOptionOverrides {
 }
 
 const DEFAULT_PIKAPOOL_OPTIONS: PikapoolOptions = {
-  settlementContract: "0xd2090025857B9C7B24387741f120538E928A3a59",
+  settlementContract: "0xf2F1cb33141c931D2e81cD0572c97e5b2c63fD9c",
   rpcUrl: "https://api.pikapool.cool/v0/bids",
 };
 
@@ -94,22 +94,6 @@ export default function useBid(
   };
   const wagmi = useSignTypedData(typedData);
 
-  // const provider = providers.getDefaultProvider(5);
-  // const bid = {
-  //   auctionName,
-  //   auctionAddress,
-  //   bidder: address,
-  //   amount: amount.toString(),
-  //   basePrice: basePriceBn.toString(),
-  //   tip: tipBn.toString(),
-  // };
-  // console.log(bid);
-  // const contract = new Contract(
-  //   "0x6f6f38bfc46d3fe0e3a34c01d9550401c7764621",
-  //   SettlementAbi,
-  //   provider
-  // );
-
   function reset() {
     setIsLoading(false);
     setError(null);
@@ -136,17 +120,7 @@ export default function useBid(
       };
       // @ts-expect-error
       delete typedDataToSend["value"];
-      console.log(
-        JSON.stringify(
-          {
-            typed_data: typedDataToSend,
-            signature: sig,
-            sender: address,
-          },
-          null,
-          2
-        )
-      );
+
       const res = await fetch(pikapoolOptions.rpcUrl, {
         method: "PUT",
         body: JSON.stringify(

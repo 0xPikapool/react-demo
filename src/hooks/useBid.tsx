@@ -42,8 +42,8 @@ export default function useBid(
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const { address } = useAccount();
 
-  const basePriceBn = BigNumber.from("69");
-  const tipBn = BigNumber.from("420");
+  const basePriceBn = utils.parseEther(basePrice.toString());
+  const tipBn = utils.parseEther(tip.toString());
 
   const typedData = {
     primaryType: "Bid",

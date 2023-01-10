@@ -15,11 +15,11 @@ export function BidForm() {
     "0xf2F1cb33141c931D2e81cD0572c97e5b2c63fD9c"
   );
   const [auctionName, setAuctionName] = useState<string>(
-    "Mistys_Modafinil_Maze"
+    "Bored_Pikachu_Pokeball_Club"
   );
   const [amount, setAmount] = useState(5);
   const [tip, setTip] = useState(0.1);
-  const [basePrice, setBasePrice] = useState(0.25);
+  const [basePrice, setBasePrice] = useState(0.15);
   const { signAndSubmit, isLoading, error, receipt, reset } = useBid(
     auctionName,
     auctionAddress,

@@ -30,7 +30,6 @@ export function BidForm() {
     amount,
     tip,
     signer,
-    chain?.id,
     {
       settlementContract,
     }

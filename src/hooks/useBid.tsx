@@ -1,8 +1,6 @@
-import { useEffect, useState } from "react";
-import { useSignTypedData, useAccount } from "wagmi";
-import { BigNumber, utils, Contract, providers } from "ethers";
-
-import SettlementAbi from "../abi/Settlement.json";
+import { useState } from "react";
+import { useAccount } from "wagmi";
+import { utils, providers, Wallet } from "ethers";
 
 export interface Receipt {
   id: string;
@@ -30,6 +28,7 @@ export default function useBid(
   amount: number,
   tip: number,
   basePrice: number,
+  signer: providers.JsonRpcSigner | Wallet | undefined,
   chainId: number = 1,
   pikapoolOptionOverrides: PikapoolOptionOverrides = DEFAULT_PIKAPOOL_OPTIONS
 ) {
@@ -55,24 +54,6 @@ export default function useBid(
     },
 
     types: {
-      EIP712Domain: [
-        {
-          name: "name",
-          type: "string",
-        },
-        {
-          name: "version",
-          type: "string",
-        },
-        {
-          name: "chainId",
-          type: "uint256",
-        },
-        {
-          name: "verifyingContract",
-          type: "address",
-        },
-      ],
       Bid: [
         { name: "auctionName", type: "string" },
         { name: "auctionAddress", type: "address" },
@@ -83,16 +64,15 @@ export default function useBid(
       ],
     },
 
-    value: {
+    message: {
       auctionName,
       auctionAddress,
       bidder: address,
-      amount: amount.toString(),
-      basePrice: basePriceBn.toString(),
-      tip: tipBn.toString(),
+      amount: "0x" + amount.toString(16),
+      basePrice: basePriceBn.toHexString(),
+      tip: tipBn.toHexString(),
     },
   };
-  const wagmi = useSignTypedData(typedData);
 
   function reset() {
     setIsLoading(false);
@@ -101,25 +81,43 @@ export default function useBid(
   }
 
   async function signAndSubmit() {
-    if (!address) return setError(new Error("No address"));
+    if (!signer) return setError(new Error("No signer found"));
+    if (!address) return setError(new Error("No address found"));
     try {
       setIsLoading(true);
       setError(null);
       setReceipt(null);
-      const sig = await wagmi.signTypedDataAsync();
-      // wagmi uses 'value' instead of 'message' for some reason.
-      // dirty switch for now.
+      const sig = await signer._signTypedData(
+        typedData.domain,
+        typedData.types,
+        typedData.message
+      );
+
+      // Add the Domain to the types before sending to the server
       const typedDataToSend = {
         ...typedData,
-        message: {
-          ...typedData.value,
-          amount: "0x" + amount.toString(16),
-          basePrice: basePriceBn.toHexString(),
-          tip: tipBn.toHexString(),
+        types: {
+          EIP712Domain: [
+            {
+              name: "name",
+              type: "string",
+            },
+            {
+              name: "version",
+              type: "string",
+            },
+            {
+              name: "chainId",
+              type: "uint256",
+            },
+            {
+              name: "verifyingContract",
+              type: "address",
+            },
+          ],
+          ...typedData.types,
         },
       };
-      // @ts-expect-error
-      delete typedDataToSend["value"];
 
       const res = await fetch(pikapoolOptions.rpcUrl, {
         method: "PUT",

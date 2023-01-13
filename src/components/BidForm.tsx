@@ -1,11 +1,13 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { providers } from "ethers";
 import { useState } from "react";
-import { useAccount, useNetwork } from "wagmi";
+import { useAccount, useNetwork, useSigner } from "wagmi";
 import useBid, { Receipt } from "../hooks/useBid";
 import happyPika from "../public/happy-pika.webp";
 import sadPika from "../public/sad-pika.webp";
 
 export function BidForm() {
+  const signerResult = useSigner();
   const { isConnected } = useAccount();
   const { chain } = useNetwork();
   const [auctionAddress, setAuctionAddress] = useState<`0x${string}`>(
@@ -17,6 +19,7 @@ export function BidForm() {
   const [auctionName, setAuctionName] = useState<string>(
     "Bored_Pikachu_Pokeball_Club"
   );
+  const signer = signerResult.data as providers.JsonRpcSigner | undefined;
   const [amount, setAmount] = useState(5);
   const [tip, setTip] = useState(0.1);
   const [basePrice, setBasePrice] = useState(0.15);
@@ -26,6 +29,7 @@ export function BidForm() {
     amount,
     tip,
     basePrice,
+    signer,
     chain?.id,
     {
       settlementContract,

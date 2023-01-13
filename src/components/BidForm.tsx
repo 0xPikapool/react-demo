@@ -2,7 +2,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { providers } from "ethers";
 import { useState } from "react";
 import { useAccount, useNetwork, useSigner } from "wagmi";
-import useBid, { Receipt } from "../hooks/useBid";
+import { bids, types } from "@pikapool/sdk";
 import happyPika from "../public/happy-pika.webp";
 import sadPika from "../public/sad-pika.webp";
 
@@ -23,12 +23,12 @@ export function BidForm() {
   const [amount, setAmount] = useState(5);
   const [tip, setTip] = useState(0.1);
   const [basePrice, setBasePrice] = useState(0.15);
-  const { signAndSubmit, isLoading, error, receipt, reset } = useBid(
+  const { signAndSubmit, isLoading, error, receipt, reset } = bids.hooks.useBid(
     auctionName,
     auctionAddress,
+    basePrice,
     amount,
     tip,
-    basePrice,
     signer,
     chain?.id,
     {
@@ -128,7 +128,10 @@ export function BidForm() {
   );
 }
 
-export function Success(props: { receipt: Receipt; reset: () => void }) {
+export function Success(props: {
+  receipt: types.BidReceipt;
+  reset: () => void;
+}) {
   const receipt = props.receipt;
   return (
     <div
